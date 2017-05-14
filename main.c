@@ -7,12 +7,12 @@ void ReadAttempt(int attempt[], int lvl){
 	int i = 1;
 	int j = 0;
 	char c[lvl];
-	do{
+	do {
     	c[0] = getch();
-    }while (c[0] <= '0' || c[0] > '9');
+    } while (c[0] <= '0' || c[0] > '9');
     printw("%c", c[0]);
     attempt[0] = c[0] - '0';
-    do{
+    do {
     	int flag = 0;
     	c[i] = getch();
     	if (c[i] < '0' || c[i] > '9')
@@ -28,11 +28,13 @@ void ReadAttempt(int attempt[], int lvl){
     		printw("%c", c[i]);
     		attempt[i] = c[i] - '0';
     	}
-    }while (++i != lvl);
+    } while (++i != lvl);
 }
 
 void Logo() {
-	// Лого
+	printw("\to-----------------------------o\n");
+ 	printw("\t| B U L L S   A N D   C O W S |\n");
+ 	printw("\to-----------------------------o\n");
 }
 
 void Menu(int *item) {
@@ -40,10 +42,15 @@ void Menu(int *item) {
  	clear();
  	Logo();
  	*item = 0;
-	printw("\t\tWelcome to menu!\n");
-	printw("\t\t1.Play\n\t\t2.Game rules\n\t\t3.Difficulty level");
-	printw("\n\t\t4.Number of players\n\t\t5.Exit\n");
-	printw("\tMenu item number: ");
+	printw("\t\t  o---------o\n");
+ 	printw("\t\t  | M E N U |\n");
+ 	printw("\t\t  o---------o\n");
+	printw("\t\to.Play\n");
+	printw("\t\t2.Rules\n");
+	printw("\t\t3.Difficulty level\n");
+	printw("\t\t4.Number of players\n");
+	printw("\t\t5.Exit\n");
+	printw("Select par. >> ");
 	do {
 		tmp = getch();
 	} while(tmp < '1' || tmp > '5');
@@ -54,8 +61,10 @@ void Menu(int *item) {
 void GameRules() {
 	clear();
 	Logo();
-	// голо правил
-	// правила
+	printw("\t\t o-----------o\n");
+ 	printw("\t\t | R U L E S |\n");
+ 	printw("\t\t o-----------o\n");
+ 	printw("The player conceives a four-digit number. The numbers in the number do not repeat, 0 can stand in the first place. The player makes moves to find out this number. In response to each turn, the Second Player shows the number of guessed figures standing in their places (the number of bulls) and the number of guessed figures that are not in their places (the number of cows).\n");
  	getch();
 	clear();
 }
@@ -87,6 +96,8 @@ void NumberOfPlayers(int *players) {
 		tmp = getch();
 	} while (tmp < '1' || tmp > '2');
 	*players = tmp - '0';
+	printw("%d", *players);
+
 	clear();
 }
 
@@ -139,7 +150,6 @@ void TwoPlayers(int *lvl) {
 	clear();
 	int i = 0;
 	int j = 0;
-	long int generate_num;
 	int generate_num_one[*lvl];
 	int generate_num_two[*lvl];
 	int attempt[*lvl];
@@ -148,35 +158,15 @@ void TwoPlayers(int *lvl) {
 	int cows_one = 0;
 	int cows_two = 0;
 	int n = 1;
-	int check = 0;
-	long int attempt_number;
 	Logo();
 	printw("Player one, please, input number for another player (%d numbers): ", *lvl);
-	scanw("%ld", &generate_num);
-	i = *lvl - 1;
-		while (generate_num > 0) {
-			generate_num_two[i] = generate_num % 10;
-			--i;
-			generate_num = generate_num / 10;
-		}
+	ReadAttempt(generate_num_two, *lvl);
 	clear();
 	Logo();
 	printw("Player two, please, input number for another player (%d numbers): ", *lvl);
-	scanw("%ld", &generate_num);
-	i = *lvl - 1;
-		while (generate_num > 0) {
-			generate_num_one[i] = generate_num % 10;
-			--i;
-			generate_num = generate_num / 10;
-		}
+	ReadAttempt(generate_num_one, *lvl);
 	clear();
 	Logo();
-	i = *lvl - 1;
-		while (generate_num > 0) {							//Зачем?!
-			generate_num_two[i] = generate_num % 10;
-			--i;
-			generate_num = generate_num / 10;
-		}
 	printw("\t\tPlayer one\t\t\tPlayer two\n");
 	printw("N\tAttempt\tCows\tBulls\t\tAttempt\tCows\tBulls\n");
 	while (1) {
@@ -186,7 +176,6 @@ void TwoPlayers(int *lvl) {
 		cows_two = 0;
 		printw("%d\t", n);
 		//1игрок
-		scanw("%ld", &attempt_number);		//Исправить ошибку с переводом на новую строку
 		i = *lvl - 1;
 		ReadAttempt(attempt, *lvl);
 		//Считаем быков
@@ -197,10 +186,9 @@ void TwoPlayers(int *lvl) {
 			for (j = 0; j < *lvl; ++j)
 				if (attempt[i] == generate_num_one[j]) ++cows_one;
 		cows_one -= bulls_one;
-		printw("\t%d\t%d\n", cows_one, bulls_one);
+		printw("\t%d\t%d\t\t", cows_one, bulls_one);
 
 		//2игрок
-		scanw("%ld", &attempt_number);		//Исправить ошибку с переводом на новую строку
 		i = *lvl - 1;
 		ReadAttempt(attempt, *lvl);
 		//Считаем быков
@@ -219,8 +207,8 @@ void TwoPlayers(int *lvl) {
 	if ((bulls_one == *lvl) && (bulls_two == *lvl)) printw("\nDraw");
 		else if (bulls_one == *lvl) printw("\nPlayer one wins!");
 			else printw("\nPlayer two wins!");
-	printw("\nInput number for exit to menu: ");
-	scanw("%d", &check);
+	printw("\nClick any button to continue: ");
+	getch();
 	clear();
 }
 
@@ -231,7 +219,6 @@ void Game(int *lvl, int *players) {
 	if (*players == 1) OnePlayer(&*lvl);
 	if (*players == 2) TwoPlayers(&*lvl);
 }
-	
 
 int main() {
 	initscr();
@@ -250,7 +237,6 @@ int main() {
 			endwin();
 			return 0;
 		}
-		if (item == 6) Authors();
 	}
 	return 0;
 }
