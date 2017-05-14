@@ -1,337 +1,256 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ncurses.h>
 
-void Wait (int seconds) { //Функция ожидания
-  clock_t endwait;
-  endwait = clock () + seconds * CLOCKS_PER_SEC;
-  while (clock() < endwait) {}
+void ReadAttempt(int attempt[], int lvl){
+	int i = 1;
+	int j = 0;
+	char c[lvl];
+	do{
+    	c[0] = getch();
+    }while (c[0] <= '0' || c[0] > '9');
+    printw("%c", c[0]);
+    attempt[0] = c[0] - '0';
+    do{
+    	int flag = 0;
+    	c[i] = getch();
+    	if (c[i] < '0' || c[i] > '9')
+    		flag = 1;
+    	else
+    	for (j = i-1; j >= 0; --j)
+    		if (c[j] == c[i])
+    			flag = 1;
+    	if (flag == 1)
+    		--i; 
+    	refresh();
+    	if (flag == 0){
+    		printw("%c", c[i]);
+    		attempt[i] = c[i] - '0';
+    	}
+    }while (++i != lvl);
 }
 
-void PrintLogo() {
-	system("clear");
+void Logo() {
 	// Лого
 }
 
-void PrintRules() {
-	PrintLogo();
-	// Правила
-}
-
-void PrintDifficulty(char difficulty) {
-	switch(difficulty) {
-		case '1': {
-			printf("Choosen difficulty - Easy (4 numbers)\n");
-			break;
-		}
-		case '2': {
-			printf("Choosen difficulty - Medium (5 numbers)\n");
-			break;
-		}
-		case '3': {
-			printf("Choosen difficulty - Hard (6 numbers)\n");
-			break;
-		}
-	}
-}
-
-void Menu(char *flag) {
+void Menu(int *item) {
+ 	char tmp;
+ 	clear();
+ 	Logo();
+ 	*item = 0;
+	printw("\t\tWelcome to menu!\n");
+	printw("\t\t1.Play\n\t\t2.Game rules\n\t\t3.Difficulty level");
+	printw("\n\t\t4.Number of players\n\t\t5.Exit\n");
+	printw("\tMenu item number: ");
 	do {
-		PrintLogo();
-		printf("\n\n");
-		printf("\t\t\t\t1.One player\n");
-		printf("\t\t\t\t2.Two players\n");
-		printf("\t\t\t\t3.Game Rules\n");
-		printf("\t\t\t\t4.Difficulty\n");
-		printf("\t\t\t\t0.Exit\n");
-		printf("\t\t\t\tChoose:");
-		scanf("%c", flag);
-		if (*flag == '0')
-			break;
-	} while ((*flag < '1') || (*flag > '4'));
+		tmp = getch();
+	} while(tmp < '1' || tmp > '5');
+	*item = tmp - '0';
+	clear();
 }
 
 void GameRules() {
-	int tmp = 1;
+	clear();
+	Logo();
+	// голо правил
+	// правила
+ 	getch();
+	clear();
+}
+
+void DifficultyLVL(int *lvl) {
+	char tmp;
+	clear();
+	Logo();
+	*lvl = 0;
+	printw("You can choose the difficulty level!\n");
+	printw("\t\t1.Easy (4 numbers)\n");
+	printw("\t\t2.Medium (5 numbers)\n");
+	printw("\t\t3.Hard (6 numbers)\n");
+	printw("LVL (input number): ");
 	do {
-		PrintRules();
-		scanf("%d", &tmp);
-	} while (tmp != 0);
+		tmp = getch();
+	} while(tmp < '1' || tmp > '3');
+	*lvl = 3 + tmp - '0';
+	clear();
 }
 
-void MenuDifficulty(char *difficulty) {
+void NumberOfPlayers(int *players) {
+	char tmp;
+	clear();
+	Logo();
+	*players = 0;
+	printw("Please, choose number of players: ");
 	do {
-		PrintLogo();
-		printf("\n\n");
-		printf("\t\t\t\t1.Easy   (4 numbers)\n");
-		printf("\t\t\t\t2.Medium (5 numbers)\n");
-		printf("\t\t\t\t3.Hard   (6 numbers)\n");
-		printf("\t\t\t\tChoose:");
-		scanf("%c", difficulty);
-	} while ((*difficulty < '1') || (*difficulty > '3'));
+		tmp = getch();
+	} while (tmp < '1' || tmp > '2');
+	*players = tmp - '0';
+	clear();
 }
 
-void PrintFieldPlayerOne(int attempt, int attemptNumber[], int cows[], int bulls[]) {
-	PrintLogo();
-	printf("\tN\t Attempt\tCows\t Bulls\t\n");
-	for (int i = 0; i < attempt; ++i) {
-		printf("%7d\t", i+1);
-		printf("%7d\t", attemptNumber[i]);
-		printf("%7d\t", cows[i]);
-		printf("%7d\t", bulls[i]);
-		printf("\n");
-	}
-}
-
-void PlayerOne(char difficulty) {
-	system("clear");
-	PrintDifficulty(difficulty);
-	Wait(3);
-	system("clear");
-	
-	int range; //Диапазон - 4х-, 5и-, 6и-значное число
-	long int rangeMin, rangeMax; // Минимальное и максимальное допустимое вводимое значение
-	long int attemptNumber = 0; //Попытка
-	int bulls, cows;
-	int flag; 
-	int tmpCows[10]; //Запоминаем предыдущие значения коров, быков, попыток
-	int tmpBulls[10];
-	int tmpAttemptNumber[10];
-	//Проверка на сложность
-	if (difficulty == '1') {
-		range = 4;
-		rangeMin = 1000;
-		rangeMax = 9999;
-	}
-	else if (difficulty == '2') {
-		range = 5;
-		rangeMin = 10000;
-		rangeMax = 99999;
-	}
-	else {
-		range = 6;
-		rangeMin = 100000;
-		rangeMax = 999999;
-	}
-	int attemptNumberMas[range]; //Попытка, разделенная на массив поразрядно
-	int targetNumber[range]; //Загаданное число
-
-	
-	//Загадываем число
-	printf("Guessing number...\n");
+void OnePlayer(int *lvl) {
+	clear();
 	int i = 1;
-	targetNumber[0] = 1 + rand() %9;
-	while (i < range) {
-		flag = 0;
-		targetNumber[i] = rand() %10;
-		for (int j = i-1; j >= 0; --j)
-			if (targetNumber[j] == targetNumber[i])
-				flag = 1;
-		if (flag != 1) ++i;
+	int j = 0;
+	int generate_num[*lvl];
+	int attempt[*lvl];
+	int bulls = 0;
+	int cows = 0;
+	int n = 1;
+	int check = 0;
+	//Загадываем число
+	generate_num[0] = 1 + rand() % 9;
+	for (i = 1; i < *lvl; ++i) {
+		generate_num[i] = rand() % 10;
+		for (j = 0; j < i; ++j) {
+			if (generate_num[i] == generate_num[j])
+				--i;
+		}
 	}
-	for (int i = 0; i < range; ++i)
-		printf("%d", targetNumber[i]);
-	Wait(rand() % 5);
-	system("clear");
-	
-	//Процесс игры
-	for (int attempt = 1; attempt < 10; ++attempt) {
+	Logo();
+	printw("N\tAttempt\tCows\tBulls\n");
+	while (bulls != *lvl) {
 		bulls = 0;
 		cows = 0;
-		flag = 1;
-		//Считываем число, проверяем его и делим в массив
-		while (flag) {
-			flag = 0;
-			printf("Guess number:");
-			scanf("%ld", &attemptNumber);
-			if (attemptNumber < rangeMin 
-				|| attemptNumber > rangeMax)
-				flag = 1;
-			tmpAttemptNumber[attempt - 1] = attemptNumber;
-			for (i = 0; i < range; ++i) {
-				attemptNumberMas[range-i-1] = attemptNumber % 10;
-				attemptNumber /= 10;
-			}
-			for (i = range - 1; i >= 1; --i)
-				for (int j = i-1; j >= 0; --j)
-					if (attemptNumberMas[i] == attemptNumberMas[j])
-						flag = 1;
-		}
-
+		printw("%d\t", n);
+		//Считываем число, преобразуем его в массив
+		ReadAttempt(attempt, *lvl);
+		i = *lvl - 1;
 		//Считаем быков
-		for (int i = 0; i < range; ++i) {
-			if (attemptNumberMas[i] == targetNumber[i]){
-				bulls++;
-			}
-		}
+		for (i = 0; i < *lvl; ++i)
+			if (attempt[i] == generate_num[i]) ++bulls;
 		//Считаем коров
-		for (int i = 0; i < range; ++i) {
-			for (int j = 0; j < range; ++j)
-				if (attemptNumberMas[i] == targetNumber[j])
-					cows++;
-		}
+		for (i = 0; i < *lvl; ++i)
+			for (j = 0; j < *lvl; ++j)
+				if (attempt[i] == generate_num[j]) ++cows;
 		cows -= bulls;
-
-		//быки - на своих местах
-		//коровы - угаданные числа
-		tmpCows[attempt - 1] = cows;
-		tmpBulls[attempt - 1] = bulls;
-		PrintFieldPlayerOne(attempt, tmpAttemptNumber, tmpCows, tmpBulls);
-		if (bulls == range) {
-			printf("\nYou win!\n");
-			Wait(3);
-			break;
-		}
-		
+		printw("\t%d\t%d\n", cows, bulls);
+		n++;
 	}
-	system("PAUSE");
+	printw("You win!\nInput number for exit to menu: ");
+	scanw("%d", &check);
+	clear();
+
 }
 
-void PlayerTwo(char difficulty) {}/*
-	system("clear");
-	PrintDifficulty(difficulty);
-	Wait(3);
-	system("clear");
-
-	int range; //Диапазон - 4х-, 5и-, 6и-значное число
-	long int rangeMin, rangeMax; // Минимальное и максимальное допустимое вводимое значение
-	long int attemptNumber = 0; //Попытка
-	int bulls[2]; 
-	int cows[2]; 
-	int flag[2]; 
-	int tmpCows[10][2]; //Запоминаем предыдущие значения коров, быков, попыток
-	int tmpBulls[10][2];
-	int tmpAttemptNumber[10][2];
-	//Проверка на сложность
-	if (difficulty == '1'){
-		range = 4;
-		rangeMin = 1000;
-		rangeMax = 9999;
-	}
-	else if (difficulty == '2'){
-		range = 5;
-		rangeMin = 10000;
-		rangeMax = 99999;
-	}
-	else {
-		range = 6;
-		rangeMin = 100000;
-		rangeMax = 999999;
-	}
-	int attemptNumberMas[range]; //Попытка, разделенная на массив поразрядно
-	long int targetNumberMas[range][2]; //Загаданное число
-	long int targetNumberOne;
-	long int targetNumberTwo;
-	while (flag){
-		system("clear");
-		flag = 0;
-		printf("First player input his number:");
-		scanf("%ld", &targetNumber);
-		if (targetNumberOne < rangeMin || targetNumberOne > rangeMax)
-			flag = 1;
-		for (i = 0; i < range; ++i){
-			targetNumberMas[range-i-1][0] = targetNumberOne % 10;
-			targetNumberOne /= 10;
+void TwoPlayers(int *lvl) {
+	clear();
+	int i = 0;
+	int j = 0;
+	long int generate_num;
+	int generate_num_one[*lvl];
+	int generate_num_two[*lvl];
+	int attempt[*lvl];
+	int bulls_one = 0;
+	int bulls_two = 0;
+	int cows_one = 0;
+	int cows_two = 0;
+	int n = 1;
+	int check = 0;
+	long int attempt_number;
+	Logo();
+	printw("Player one, please, input number for another player (%d numbers): ", *lvl);
+	scanw("%ld", &generate_num);
+	i = *lvl - 1;
+		while (generate_num > 0) {
+			generate_num_two[i] = generate_num % 10;
+			--i;
+			generate_num = generate_num / 10;
 		}
-		for (i = range - 1; i >= 1; --i)
-			for (int j = i-1; j >= 0; --j)
-				if (targetNumberMas[i][0] == targetNumberMas[j][0])
-					flag = 1;
-	}
-	while (flag){
-		system("clear");
-		flag = 0;
-		printf("Second player input his number:");
-		scanf("%ld", &targetNumber);
-		if (targetNumberTwo < rangeMin || targetNumberTwo > rangeMax)
-			flag = 1;
-		for (i = 0; i < range; ++i){
-			targetNumberMas[range-i-1][1] = targetNumberTwo % 10;
-			targetNumberTwo /= 10;
+	clear();
+	Logo();
+	printw("Player two, please, input number for another player (%d numbers): ", *lvl);
+	scanw("%ld", &generate_num);
+	i = *lvl - 1;
+		while (generate_num > 0) {
+			generate_num_one[i] = generate_num % 10;
+			--i;
+			generate_num = generate_num / 10;
 		}
-		for (i = range - 1; i >= 1; --i)
-			for (int j = i-1; j >= 0; --j)
-				if (targetNumberMas[i][1] == targetNumberMas[j][1])
-					flag = 1;
-	}
-	
-	//Процесс игры
-	for (int attempt = 1; attempt < 10; ++attempt){
-		bulls = 0;
-		cows = 0;
-		flag = 1;
-		//Считываем число, проверяем его, и делим в массив
-		while (flag){
-			flag = 0;
-			printf("Guess number:");
-			scanf("%ld", &attemptNumber);
-			if (attemptNumber < rangeMin || attemptNumber > rangeMax)
-				flag = 1;
-			tmpAttemptNumber[attempt - 1] = attemptNumber;
-			for (i = 0; i < range; ++i){
-				attemptNumberMas[range-i-1] = attemptNumber % 10;
-				attemptNumber /= 10;
-			}
-			for (i = range - 1; i >= 1; --i)
-				for (int j = i-1; j >= 0; --j)
-					if (attemptNumberMas[i] == attemptNumberMas[j])
-						flag = 1;
+	clear();
+	Logo();
+	i = *lvl - 1;
+		while (generate_num > 0) {							//Зачем?!
+			generate_num_two[i] = generate_num % 10;
+			--i;
+			generate_num = generate_num / 10;
 		}
-
+	printw("\t\tPlayer one\t\t\tPlayer two\n");
+	printw("N\tAttempt\tCows\tBulls\t\tAttempt\tCows\tBulls\n");
+	while (1) {
+		bulls_one = 0;
+		bulls_two = 0;
+		cows_one = 0;
+		cows_two = 0;
+		printw("%d\t", n);
+		//1игрок
+		scanw("%ld", &attempt_number);		//Исправить ошибку с переводом на новую строку
+		i = *lvl - 1;
+		ReadAttempt(attempt, *lvl);
 		//Считаем быков
-		for (int i = 0; i < range; ++i){
-			if (attemptNumberMas[i] == targetNumber[i]){
-				bulls++;
-			}
-		}
+		for (i = 0; i < *lvl; ++i)
+			if (attempt[i] == generate_num_one[i]) ++bulls_one;
 		//Считаем коров
-		for (int i = 0; i < range; ++i){
-			for (int j = 0; j < range; ++j)
-				if (attemptNumberMas[i] == targetNumber[j])
-					cows++;
-		}
-		cows -= bulls;
+		for (i = 0; i < *lvl; ++i)
+			for (j = 0; j < *lvl; ++j)
+				if (attempt[i] == generate_num_one[j]) ++cows_one;
+		cows_one -= bulls_one;
+		printw("\t%d\t%d\n", cows_one, bulls_one);
 
-		//быки - на своих местах
-		//коровы - угаданные числа
-		tmpCows[attempt - 1] = cows;
-		tmpBulls[attempt - 1] = bulls;
-		PrintFieldPlayerOne(attempt, tmpAttemptNumber, tmpCows, tmpBulls);
-		if (bulls == range){
-			printf("\nYou win!\n");
-			break;
-		}
-		
+		//2игрок
+		scanw("%ld", &attempt_number);		//Исправить ошибку с переводом на новую строку
+		i = *lvl - 1;
+		ReadAttempt(attempt, *lvl);
+		//Считаем быков
+		for (i = 0; i < *lvl; ++i)
+			if (attempt[i] == generate_num_two[i]) ++bulls_two;
+		//Считаем коров
+		for (i = 0; i < *lvl; ++i)
+			for (j = 0; j < *lvl; ++j)
+				if (attempt[i] == generate_num_two[j]) ++cows_two;
+		cows_two -= bulls_two;
+		printw("\t%d\t%d\n", cows_two, bulls_two);
+		n++;
+		if (bulls_one == *lvl) break;
+		if (bulls_two == *lvl) break;
 	}
-	system("PAUSE");
-}*/
+	if ((bulls_one == *lvl) && (bulls_two == *lvl)) printw("\nDraw");
+		else if (bulls_one == *lvl) printw("\nPlayer one wins!");
+			else printw("\nPlayer two wins!");
+	printw("\nInput number for exit to menu: ");
+	scanw("%d", &check);
+	clear();
+}
 
-int main(int argc, char *argv[]) {
+void Game(int *lvl, int *players) {
 	srand(time(NULL));
-	char flag;
-	char difficulty = '3';
-	while(1) {
-		Menu(&flag);
-		switch(flag) {
-			case '1': {
-				PlayerOne(difficulty);
-				break;
-			}
-			case '2': {
-				PlayerTwo(difficulty);
-				break;
-			}
-			case '3': {
-				GameRules();
-				break;
-			}
-			case '4': {
-				MenuDifficulty(&difficulty);
-				break;
-			}
-			case '0': {
-				return 0;
-			}
+	if (*lvl == 0) DifficultyLVL(&*lvl);
+	if (*players == 0) NumberOfPlayers(&*players);
+	if (*players == 1) OnePlayer(&*lvl);
+	if (*players == 2) TwoPlayers(&*lvl);
+}
+	
+
+int main() {
+	initscr();
+	scrollok(stdscr, TRUE);
+	noecho();
+	int item;
+	int lvl = 0;
+	int players = 0;
+	while (1) {
+		Menu(&item);
+		if (item == 1) Game(&lvl, &players);
+		if (item == 2) GameRules();
+		if (item == 3) DifficultyLVL(&lvl);
+		if (item == 4) NumberOfPlayers(&players);
+		if (item == 5) {
+			endwin();
+			return 0;
 		}
+		if (item == 6) Authors();
 	}
+	return 0;
 }
