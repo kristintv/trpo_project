@@ -7,62 +7,85 @@ void Logo() {
  	printf("\t+-+-+-+-+-+ +-+-+-+ +-+-+-+-+\n");
 }
 
-void Menu(char *item) {
+void Menu(int *item) {
  	system("clear");
  	Logo();
+ 	*item = 0;
 	printf("\t\tWelcome to menu!\n");
 	printf("\t\t1.Play\n\t\t2.Game rules\n\t\t3.Difficulty level\n\t\t4.Exit\n");
 	printf("\tMenu item number: ");
-	scanf(" %c", item);
-	while ((*item < '1') || (*item > '4')) {
-		printf("Sorry, this menu item number is missing :(\nPlease, select again: ");		//Исправить ошибку с повторяющимся выводом
-		scanf("%c", item);
-		printf("\n");
-	}
-	printf("Thanks!\n");
+	// Дописать выбор в меню
+	scanf("%d", item);
 	system("clear");
 }
 
-void GameRules(char *item) {
+void GameRules() {
 	system("clear");
 	Logo();
 	printf("\t\t  +-+-+-+-+-+\n");
  	printf("\t\t  |R|U|L|E|S|\n");
  	printf("\t\t  +-+-+-+-+-+\n");
- 	printf("*Rules*\n");		//Добавить правила
- 	*item = 0;
-	printf("Input 0 to back: ");
-	scanf("%c\n", item);
-	while (*item != '0') {
-		printf("Sorry, it`s not 0 :(\nPlease, select again: ");
-		scanf("%c\n", item);
-	}
+ 	printf("*Rules*\n");
+ 	int check = 0;
+	printf("Input any symbol to back: ");
+	scanf("%d", &check);
+	system("clear");
+	// Добавить правила
 }
 
-void DifficultyLVL(char *lvl, char *item) {
+void DifficultyLVL(int *lvl) {
 	system("clear");
 	Logo();
-	*item = 0;
 	*lvl = 0;
-	printf("You can choose the difficulty level!\n\t\t1.Easy (4 numbers)\n\t\t2.Medium (5 numbers)\n\t\t3.Hard (6 numbers)\n");
+	printf("You can choose the difficulty level!\n");
+	printf("\t\t1.Easy (4 numbers)\n");
+	printf("\t\t2.Medium (5 numbers)\n");
+	printf("\t\t3.Hard (6 numbers)\n");
 	printf("LVL (input number): ");
-	scanf("%c", lvl);
-	while ((*lvl < '1') || (*lvl > '3')) {
-		printf("Sorry, this difficulty level is missing :(\nPlease, select again: ");		//Исправить ошибку с повторяющимся выводом
-		scanf("%c\n", lvl);
-	}
+	scanf("%d", lvl);
+	lvl = lvl + 3;
+	system("clear");
+}
+
+void NumberOfPlayers(int *players) {
+	system("clear");
+	Logo();
+	*players = 0;
+	printf("Please, choose number of players: ");
+	scanf("%d", players);
+	system("clear");
+}
+
+
+
+void OnePlayer(int *lvl) {
+	system("clear");
+	if (*lvl == 0) DifficultyLVL(&*lvl);
+	Logo();
+	// Дописать загадывание числа
+	printf("N\tAttempt\tCows\tBulls");
+}
+
+void Game(int *lvl, int *players) {
+	if (*lvl == 0) DifficultyLVL(&*lvl);
+	if (*players == 0) NumberOfPlayers(&*players);
+	if (*players == 1) OnePlayer(&*lvl);
+	//if (*players == '2') TwoPlayers();
 }
 
 int main() {
-	char item;
-	char lvl;
+	int item;
+	int lvl = 0;
+	int players = 0;
 	while (1) {
 		Menu(&item);
-		if (item == '2')
-			GameRules(&item);
-		if (item == '3')
-			DifficultyLVL(&lvl, &item);
-		if (item == '4')
+		if (item == 1)
+			Game(&lvl, &players);
+		if (item == 2)
+			GameRules();
+		if (item == 3)
+			DifficultyLVL(&lvl);
+		if (item == 4)
 			return 0;
 	}
 }
